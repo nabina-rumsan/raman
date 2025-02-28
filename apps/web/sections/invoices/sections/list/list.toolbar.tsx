@@ -15,10 +15,12 @@ import { DataTableFacetedFilter } from './list.filter';
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  setStatus?: (status: string) => void;
 }
 
 export function DataTableToolbar<TData>({
   table,
+  setStatus
 }: DataTableToolbarProps<TData>) {
   const router = useRouter();
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -32,7 +34,11 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Search invoices..."
-          value={(table.getColumn('userId')?.getFilterValue() as string) ?? ''}
+          value={
+            Array.isArray(table.getColumn('userId')?.getFilterValue())
+              ? ''
+              : (table.getColumn('userId')?.getFilterValue() as string) ?? ''
+          }
           onChange={(event) =>
             table.getColumn('userId')?.setFilterValue(event.target.value)
           }
@@ -41,6 +47,7 @@ export function DataTableToolbar<TData>({
         {table.getColumn('status') && (
           <DataTableFacetedFilter
             column={table.getColumn('status')}
+            setStatus={setStatus}
             title="Status"
             options={Object.values(InvoiceStatusType).map((status) => ({
               label: status,

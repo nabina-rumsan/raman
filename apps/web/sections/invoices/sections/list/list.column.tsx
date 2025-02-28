@@ -34,11 +34,15 @@ export function useColumns<T>(): ColumnDef<T>[] {
   const { lookupByCuid } = useSelectLookUp();
 
   const userFilterFn: FilterFn<T> = (row, columnId, filterValue) => {
-    const userName = lookupByCuid(
-      'users',
-      row.getValue(columnId),
-    )?.name.toLowerCase();
-    return userName ? userName.includes(filterValue.toLowerCase()) : false;
+    if (Array.isArray(filterValue)) {
+      return filterValue.includes(row.getValue(columnId));
+    } else {
+      const userName = lookupByCuid(
+        'users',
+        row.getValue(columnId)
+      )?.name.toLowerCase();
+      return userName ? userName.includes(filterValue.toLowerCase()) : false;
+    }
   };
 
   return [
@@ -163,9 +167,8 @@ export function useColumns<T>(): ColumnDef<T>[] {
       cell: ({ row }) => {
         return (
           <div
-            className={`flex space-x-2 h-7 w-[100px] items-center justify-center rounded-2xl p-2 ${
-              invoiceStatusColors[row.getValue('status') as keyof StatusColors]
-            }`}
+            className={`flex space-x-2 h-7 w-[100px] items-center justify-center rounded-2xl p-2 ${invoiceStatusColors[row.getValue('status') as keyof StatusColors]
+              }`}
           >
             <span className="truncate text-xs">{row.getValue('status')}</span>
           </div>

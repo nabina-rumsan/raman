@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { CreateInvoiceDto } from './invoice.dto';
 
 export class UpdateInvoiceDto extends PartialType(CreateInvoiceDto) { }
@@ -13,4 +13,10 @@ export class GetInvoiceDto {
   @ApiPropertyOptional({ example: '10' })
   @IsNumber()
   limit?: number;
+
+  @ApiPropertyOptional({ example: 'PENDING' })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
 }

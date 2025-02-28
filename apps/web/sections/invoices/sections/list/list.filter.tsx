@@ -24,6 +24,7 @@ import { Separator } from '@rumsan/shadcn-ui/components/separator';
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>;
   title?: string;
+  setStatus?: (status: string) => void;
   options: {
     label: string;
     value: string;
@@ -34,10 +35,19 @@ interface DataTableFacetedFilterProps<TData, TValue> {
 export function DataTableFacetedFilter<TData, TValue>({
   column,
   title,
+  setStatus,
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
+  const selectedArray = Array.from(selectedValues);
+  React.useEffect(() => {
+    if (setStatus && selectedArray[0] !== undefined) {
+      setStatus(selectedArray[0]);
+    }
+  }, [selectedArray]);
+
+
 
   return (
     <Popover>

@@ -30,6 +30,7 @@ export function InvoiceList() {
     pageIndex: 0,
     pageSize: 10,
   });
+
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -37,8 +38,8 @@ export function InvoiceList() {
     [],
   );
   const columns = useColumns<Invoice>();
-
-  const invoiceList = useInvoiceList(pagination);
+  const [status, setStatus] = React.useState<string | undefined>(undefined);
+  const invoiceList = useInvoiceList(pagination, status);
 
   const table = useReactTable({
     data: (invoiceList?.data?.data as Invoice[]) || [],
@@ -79,7 +80,7 @@ export function InvoiceList() {
     <main className="gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <div className="space-y-4">
         <div className="flex flex-col gap-1 my-3"></div>
-        <DataTableToolbar table={table} />
+        <DataTableToolbar table={table} setStatus={setStatus} />
         <div className="rounded-md border bg-white p-1 min-h-96">
           <DataTable
             table={table}

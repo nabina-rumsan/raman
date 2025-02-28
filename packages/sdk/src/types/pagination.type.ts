@@ -6,4 +6,5 @@ export type Pagination = {
   filter?: Record<string, unknown>;
   year?: string;
   name?: string;
+  status?: string
 };

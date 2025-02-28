@@ -58,10 +58,15 @@ export class InvoiceService {
   }
 
   async findAll(query: GetInvoiceDto) {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, status } = query;
     const offset = (page - 1) * limit;
 
-    const whereCondition = `WHERE "deletedAt" IS NULL`;
+    let whereCondition = `WHERE "deletedAt" IS NULL`;
+
+    if (status) {
+      whereCondition += ` AND "status" = '${status}'`;
+    }
+
     const invoices = await this.prisma.$queryRawUnsafe(`
     SELECT * 
     FROM "tbl_invoices"
@@ -79,15 +84,34 @@ export class InvoiceService {
   `);
 
     const totalCountResult: any = await this.prisma.$queryRawUnsafe(`
-    SELECT COUNT(*) AS total
-    FROM "tbl_invoices"
-    ${whereCondition}
-  `);
-    const totalCount = Number(totalCountResult[0]?.total || 0);
+  SELECT 
+    COUNT(*) AS total,
+    COUNT(*) FILTER (WHERE "status" = 'PENDING') AS pending_count,
+    COUNT(*) FILTER (WHERE "status" = 'APPROVED') AS approved_count,
+    COUNT(*) FILTER (WHERE "status" = 'REIMBURSED') AS reimbursed_count,
+    COUNT(*) FILTER (WHERE "status" = 'REJECTED') AS rejected_count
+  FROM "tbl_invoices"
+  ${whereCondition}
+`);
 
+    //   const totalCountResult: any = await this.prisma.$queryRawUnsafe(`
+    //   SELECT COUNT(*) AS total
+    //   FROM "tbl_invoices"
+    //   ${whereCondition}
+    // `);
+    const totalCount = Number(totalCountResult[0]?.total)
+    console.log(Number(totalCountResult[0]), 'total count')
+
+    const collectiveStatus = {
+      totalCount: Number(totalCountResult[0]?.total),
+      pending: Number(totalCountResult[0]?.pending_count),
+      approved: Number(totalCountResult[0]?.approved_count),
+      reimbursed: Number(totalCountResult[0]?.reimbursed_count),
+      rejected: Number(totalCountResult[0]?.rejected_count),
+    }
     const lastPage = Math.ceil(totalCount / limit);
     const meta = {
-      total: totalCount,
+      total: collectiveStatus,
       lastPage,
       currentPage: page,
       perPage: limit,
@@ -97,6 +121,7 @@ export class InvoiceService {
 
     return {
       meta,
+      totalCount,
       data: invoices,
     };
   }

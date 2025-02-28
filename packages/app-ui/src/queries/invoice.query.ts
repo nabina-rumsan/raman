@@ -3,21 +3,20 @@ import { Invoice } from '@rumsan/raman/types';
 import { useRumsan } from '@rumsan/react-query';
 import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
 
-export const useInvoiceList = (pagination: any): UseQueryResult<any, Error> => {
+export const useInvoiceList = (pagination: any, status?: string): UseQueryResult<any, Error> => {
   const { queryClient, RsClient } = useRumsan<ApiClient>();
-
   const query = useQuery(
     {
-      queryKey: ['invoice_list', pagination],
+      queryKey: ['invoice_list', pagination, status],
       queryFn: () =>
         RsClient.Invoice.list({
           page: pagination.pageIndex + 1,
           limit: pagination.pageSize,
+          status: status
         }),
     },
     queryClient,
   );
-
   return query;
 };
 
