@@ -25,6 +25,9 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>;
   title?: string;
   setStatus?: (status: string) => void;
+  setUser?: (user: string) => void;
+  setProject?: (project: string) => void;
+  setCategory?: (category: string) => void
   options: {
     label: string;
     value: string;
@@ -36,16 +39,36 @@ export function DataTableFacetedFilter<TData, TValue>({
   column,
   title,
   setStatus,
+  setUser,
+  setProject,
+  setCategory,
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
   const selectedArray = Array.from(selectedValues);
+  console.log(selectedArray, 'selectedArray');
+  // React.useEffect(() => {
+  //   if (setStatus && selectedArray[0] !== undefined) {
+  //     setStatus(selectedArray[0]);
+  //   }
+  // }, [selectedArray]);
+
   React.useEffect(() => {
-    if (setStatus && selectedArray[0] !== undefined) {
-      setStatus(selectedArray[0]);
+    if (selectedArray[0] !== undefined) {
+      if (setStatus && title === "Status") setStatus(selectedArray[0]);
+      if (setUser && title === "User") setUser(selectedArray[0]);
+      if (setProject && title === "Project") setProject(selectedArray[0]);
+      if (setCategory && title === "Category") setCategory(selectedArray[0]);
+    }
+    if (selectedArray.length === 0) {
+      if (setStatus && title === "Status") setStatus('');
+      // if (setUser && title === "User") setUser(undefined);
+      // if (setProject && title === "Project") setProject(undefined);
+      // if (setCategory && title === "Category") setCategory(undefined);
     }
   }, [selectedArray]);
+
 
 
 

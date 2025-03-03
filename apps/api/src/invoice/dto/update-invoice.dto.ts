@@ -19,4 +19,18 @@ export class GetInvoiceDto {
   @IsString()
   status?: string;
 
+  @ApiPropertyOptional({ example: 'cuid' })
+  @IsOptional()
+  @IsString()
+  user?: string;
+
+  @ApiPropertyOptional({ example: 'project name' })
+  @IsOptional()
+  @IsString()
+  project?: string;
+
+  @ApiPropertyOptional({ example: 'category name' })
+  @IsOptional()
+  @IsString()
+  category?: string;
 }

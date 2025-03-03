@@ -57,58 +57,139 @@ export class InvoiceService {
     })) as Invoice;
   }
 
+  //   async findAll(query: GetInvoiceDto) {
+  //     const { page = 1, limit = 10, status } = query;
+  //     const offset = (page - 1) * limit;
+
+  //     let whereCondition = `WHERE "deletedAt" IS NULL`;
+
+  //     if (status) {
+  //       whereCondition += ` AND "status" = '${status}'`;
+  //     }
+
+  //     const invoices = await this.prisma.$queryRawUnsafe(`
+  //     SELECT * 
+  //     FROM "tbl_invoices"
+  //     ${whereCondition}
+  //     ORDER BY 
+  //       CASE "status"
+  //         WHEN 'PENDING' THEN 1
+  //         WHEN 'APPROVED' THEN 2
+  //         WHEN 'REIMBURSED' THEN 3
+  //         WHEN 'REJECTED' THEN 4
+  //         ELSE 5
+  //       END,
+  //       "createdAt" DESC
+  //     LIMIT ${limit} OFFSET ${offset}
+  //   `);
+
+  //     const totalCountResult: any = await this.prisma.$queryRawUnsafe(`
+  //   SELECT 
+  //     COUNT(*) AS total,
+  //     COUNT(*) FILTER (WHERE "status" = 'PENDING') AS pending_count,
+  //     COUNT(*) FILTER (WHERE "status" = 'APPROVED') AS approved_count,
+  //     COUNT(*) FILTER (WHERE "status" = 'REIMBURSED') AS reimbursed_count,
+  //     COUNT(*) FILTER (WHERE "status" = 'REJECTED') AS rejected_count
+  //   FROM "tbl_invoices"
+  //   ${whereCondition}
+  // `);
+
+  //     //   const totalCountResult: any = await this.prisma.$queryRawUnsafe(`
+  //     //   SELECT COUNT(*) AS total
+  //     //   FROM "tbl_invoices"
+  //     //   ${whereCondition}
+  //     // `);
+  //     const totalCount = Number(totalCountResult[0]?.total)
+  //     console.log(Number(totalCountResult[0]), 'total count')
+
+  //     const collectiveStatus = {
+  //       totalCount: Number(totalCountResult[0]?.total),
+  //       pending: Number(totalCountResult[0]?.pending_count),
+  //       approved: Number(totalCountResult[0]?.approved_count),
+  //       reimbursed: Number(totalCountResult[0]?.reimbursed_count),
+  //       rejected: Number(totalCountResult[0]?.rejected_count),
+  //     }
+  //     const lastPage = Math.ceil(totalCount / limit);
+  //     const meta = {
+  //       total: collectiveStatus,
+  //       lastPage,
+  //       currentPage: page,
+  //       perPage: limit,
+  //       prev: page > 1 ? page - 1 : null,
+  //       next: page < lastPage ? page + 1 : null,
+  //     };
+
+  //     return {
+  //       meta,
+  //       totalCount,
+  //       data: invoices,
+  //     };
+  //   }
+
   async findAll(query: GetInvoiceDto) {
-    const { page = 1, limit = 10, status } = query;
+    const { page = 1, limit = 10, status, user, project, category } = query;
+    console.log(query, 'query');
     const offset = (page - 1) * limit;
 
-    let whereCondition = `WHERE "deletedAt" IS NULL`;
+    // Start with base condition
+    let whereConditions = [`"deletedAt" IS NULL`];
 
+    // Add conditions dynamically if filters are provided
     if (status) {
-      whereCondition += ` AND "status" = '${status}'`;
+      whereConditions.push(`"status" = '${status}'`);
+    }
+    if (user) {
+      whereConditions.push(`"userId" = '${user}'`);
+    }
+    if (project) {
+      whereConditions.push(`"projectId" = '${project}'`);
+    }
+    if (category) {
+      whereConditions.push(`"categoryId" = '${category}'`);
     }
 
+    // Combine conditions into a single WHERE clause
+    const whereCondition = whereConditions.length ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // Fetch filtered invoices
     const invoices = await this.prisma.$queryRawUnsafe(`
-    SELECT * 
-    FROM "tbl_invoices"
-    ${whereCondition}
-    ORDER BY 
-      CASE "status"
-        WHEN 'PENDING' THEN 1
-        WHEN 'APPROVED' THEN 2
-        WHEN 'REIMBURSED' THEN 3
-        WHEN 'REJECTED' THEN 4
-        ELSE 5
-      END,
-      "createdAt" DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `);
+        SELECT * 
+        FROM "tbl_invoices"
+        ${whereCondition}
+        ORDER BY 
+          CASE "status"
+            WHEN 'PENDING' THEN 1
+            WHEN 'APPROVED' THEN 2
+            WHEN 'REIMBURSED' THEN 3
+            WHEN 'REJECTED' THEN 4
+            ELSE 5
+          END,
+          "createdAt" DESC
+        LIMIT ${limit} OFFSET ${offset}
+    `);
 
+    // Fetch status counts based on applied filters
     const totalCountResult: any = await this.prisma.$queryRawUnsafe(`
-  SELECT 
-    COUNT(*) AS total,
-    COUNT(*) FILTER (WHERE "status" = 'PENDING') AS pending_count,
-    COUNT(*) FILTER (WHERE "status" = 'APPROVED') AS approved_count,
-    COUNT(*) FILTER (WHERE "status" = 'REIMBURSED') AS reimbursed_count,
-    COUNT(*) FILTER (WHERE "status" = 'REJECTED') AS rejected_count
-  FROM "tbl_invoices"
-  ${whereCondition}
-`);
+      SELECT 
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE "status" = 'PENDING' ${status ? '' : 'AND "deletedAt" IS NULL'}) AS pending_count,
+        COUNT(*) FILTER (WHERE "status" = 'APPROVED' ${status ? '' : 'AND "deletedAt" IS NULL'}) AS approved_count,
+        COUNT(*) FILTER (WHERE "status" = 'REIMBURSED' ${status ? '' : 'AND "deletedAt" IS NULL'}) AS reimbursed_count,
+        COUNT(*) FILTER (WHERE "status" = 'REJECTED' ${status ? '' : 'AND "deletedAt" IS NULL'}) AS rejected_count
+      FROM "tbl_invoices"
+      ${whereCondition}
+    `);
 
-    //   const totalCountResult: any = await this.prisma.$queryRawUnsafe(`
-    //   SELECT COUNT(*) AS total
-    //   FROM "tbl_invoices"
-    //   ${whereCondition}
-    // `);
-    const totalCount = Number(totalCountResult[0]?.total)
-    console.log(Number(totalCountResult[0]), 'total count')
+    const totalCount = Number(totalCountResult[0]?.total);
 
     const collectiveStatus = {
-      totalCount: Number(totalCountResult[0]?.total),
+      totalCount,
       pending: Number(totalCountResult[0]?.pending_count),
       approved: Number(totalCountResult[0]?.approved_count),
       reimbursed: Number(totalCountResult[0]?.reimbursed_count),
       rejected: Number(totalCountResult[0]?.rejected_count),
-    }
+    };
+
     const lastPage = Math.ceil(totalCount / limit);
     const meta = {
       total: collectiveStatus,
@@ -125,6 +206,7 @@ export class InvoiceService {
       data: invoices,
     };
   }
+
 
   async findOne(cuid: string) {
     const result = await this.prisma.invoice.findUnique({

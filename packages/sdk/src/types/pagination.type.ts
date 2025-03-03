@@ -7,4 +7,7 @@ export type Pagination = {
   year?: string;
   name?: string;
   status?: string
+  user?: string;
+  project?: string;
+  category?: string;
 };

@@ -69,6 +69,7 @@ export class InvoiceController {
   @Get()
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.INVOICE })
   getInvoice(@Query() query: GetInvoiceDto) {
+    console.log('query', query);
     return this.invoiceService.findAll(query);
   }
 

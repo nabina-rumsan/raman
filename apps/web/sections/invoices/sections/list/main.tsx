@@ -39,7 +39,22 @@ export function InvoiceList() {
   );
   const columns = useColumns<Invoice>();
   const [status, setStatus] = React.useState<string | undefined>(undefined);
-  const invoiceList = useInvoiceList(pagination, status);
+  console.log(status, 'status');
+  const [user, setUser] = React.useState<string | undefined>(undefined);
+  const [project, setProject] = React.useState<string | undefined>(undefined);
+  const [category, setCategory] = React.useState<string | undefined>(undefined);
+
+
+  // const invoiceList = useInvoiceList(pagination, status, user, project, category);
+  React.useEffect(() => {
+    if (status || user || project || category) {
+      setStatus(undefined)
+      setUser(undefined)
+      setProject(undefined)
+      setCategory(undefined)
+    }
+  }, [])
+  const invoiceList = useInvoiceList(pagination, status, user, project, category);
 
   const table = useReactTable({
     data: (invoiceList?.data?.data as Invoice[]) || [],
@@ -80,7 +95,7 @@ export function InvoiceList() {
     <main className="gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <div className="space-y-4">
         <div className="flex flex-col gap-1 my-3"></div>
-        <DataTableToolbar table={table} setStatus={setStatus} />
+        <DataTableToolbar table={table} setStatus={setStatus} setUser={setUser} setProject={setProject} setCategory={setCategory} />
         <div className="rounded-md border bg-white p-1 min-h-96">
           <DataTable
             table={table}

@@ -16,11 +16,17 @@ import { DataTableFacetedFilter } from './list.filter';
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   setStatus?: (status: string) => void;
+  setUser?: (user: string) => void;
+  setProject?: (project: string) => void;
+  setCategory?: (category: string) => void;
 }
 
 export function DataTableToolbar<TData>({
   table,
-  setStatus
+  setStatus,
+  setUser,
+  setProject,
+  setCategory,
 }: DataTableToolbarProps<TData>) {
   const router = useRouter();
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -59,6 +65,7 @@ export function DataTableToolbar<TData>({
         {table.getColumn('status') && (
           <DataTableFacetedFilter
             column={table.getColumn('userId')}
+            setUser={setUser}
             title="User"
             options={users}
           />
@@ -67,6 +74,7 @@ export function DataTableToolbar<TData>({
         {table.getColumn('projectId') && (
           <DataTableFacetedFilter
             column={table.getColumn('projectId')}
+            setProject={setProject}
             title="Project"
             options={projects}
           />
@@ -75,6 +83,7 @@ export function DataTableToolbar<TData>({
         {table.getColumn('categoryId') && (
           <DataTableFacetedFilter
             column={table.getColumn('categoryId')}
+            setCategory={setCategory}
             title="Category"
             options={categories}
           />
